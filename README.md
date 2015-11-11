@@ -8,6 +8,7 @@ A boilerplate for PHP/ReactJS projects
 1. Create env file: `cp .env.example .env`
 2. Run composer: `composer install`
 3. Install node dependencies: `npm install`
+4. Install bower dependencies: `bower install`
 
 ## Run Development Site
 
