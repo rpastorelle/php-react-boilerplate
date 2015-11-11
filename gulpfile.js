@@ -125,5 +125,7 @@ gulp.task('watch', function() {
   return rebundle();
 });
 
+gulp.task('build-all', ['common' ,'build']);
+
 // run 'scripts' task first, then watch for future changes
 gulp.task('default', ['build']);
