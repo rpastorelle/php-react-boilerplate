@@ -1,0 +1,6 @@
+{
+    "compact": true,
+    "comments": false,
+    "presets": ["stage-1", "es2015", "react"],
+    "sourceMaps": false
+}
