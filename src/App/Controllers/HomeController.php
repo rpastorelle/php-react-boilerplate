@@ -17,8 +17,8 @@ class HomeController extends BaseController
         parent::__construct($app);
 
         $this->metadata = [
-            'title' => 'Squad Overseer — Stats for Groups of Squad Employees',
-            'description' => 'The Squad iOS mobile app overseer.',
+            'title' => 'Home',
+            'description' => 'Homepage description',
             'ga_tracking_id' => $this->app->config('ga.tracking_id'),
         ];
     }
