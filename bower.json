@@ -1,0 +1,22 @@
+{
+  "name": "php-react-boilerplate",
+  "version": "0.0.1",
+  "authors": [
+    "Tackk Devs"
+  ],
+  "copyright": "Tackk Inc",
+  "description": "A boilerplate for PHP/ReactJS projects",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "www/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react": "~0.14.2",
+    "react-dom": "~0.1.0"
+  }
+}

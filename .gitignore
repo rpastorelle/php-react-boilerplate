@@ -4,5 +4,6 @@ npm-debug.log
 
 vendor/
 node_modules/
+bower_components/
 test/
 tests/

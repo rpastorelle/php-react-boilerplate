@@ -4,6 +4,8 @@ var gutil = require('gulp-util');
 var browserify = require('browserify');
 var babelify = require('babelify');
 var watchify = require('watchify');
+var bowerResolve = require('bower-resolve');
+var nodeResolve = require('resolve');
 
 var production = (process.env.NODE_ENV === 'production');
 
@@ -25,15 +27,33 @@ function getBundler(watch) {
 }
 
 function getNPMPackages() {
-  var pkg = require('./package.json');
-  return Object.keys(pkg.dependencies);
+  var pkg;
+  try {
+    pkg = require('./package.json');
+  } catch (e) { /* pass */ }
+
+  return Object.keys(pkg.dependencies) || [];
+}
+
+function getBowerPackages() {
+  var pkg;
+  try {
+    pkg = require('./bower.json');
+  } catch (e) { /* pass */ }
+
+  return Object.keys(pkg.dependencies) || [];
 }
 
 gulp.task('common', function(){
   var bundler = getBundler(false);
 
-  // Require and expose all common packages
-  bundler.require(getNPMPackages());
+  getBowerPackages().forEach(function (pkg) {
+    bundler.require(bowerResolve.fastReadSync(pkg), {expose: pkg});
+  });
+
+  getNPMPackages().forEach(function (pkg) {
+    bundler.require(nodeResolve.sync(pkg), {expose: pkg});
+  });
 
   var stream = bundler.bundle()
     .on('error', function(err){
@@ -51,7 +71,14 @@ gulp.task('common', function(){
 gulp.task('build', function() {
   var bundler = getBundler(false);
   bundler.add(MAIN_FILE);
-  bundler.external(getNPMPackages());
+
+  getBowerPackages().forEach(function (pkg) {
+    bundler.external(pkg);
+  });
+
+  getNPMPackages().forEach(function (pkg) {
+    bundler.external(pkg);
+  });
 
   var stream = bundler.bundle()
     .on('error', function(err){
@@ -69,7 +96,14 @@ gulp.task('build', function() {
 gulp.task('watch', function() {
   var bundler = getBundler(true);
   bundler.add(MAIN_FILE);
-  bundler.external(getNPMPackages());
+
+  getBowerPackages().forEach(function (pkg) {
+    bundler.external(pkg);
+  });
+
+  getNPMPackages().forEach(function (pkg) {
+    bundler.external(pkg);
+  });
 
   function rebundle() {
     var stream = bundler.bundle();
