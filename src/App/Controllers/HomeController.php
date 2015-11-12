@@ -15,12 +15,6 @@ class HomeController extends BaseController
     function __construct(Application $app)
     {
         parent::__construct($app);
-
-        $this->metadata = [
-            'title' => 'Home',
-            'description' => 'Homepage description',
-            'ga_tracking_id' => $this->app->config('ga.tracking_id'),
-        ];
     }
 
     /**
@@ -32,8 +26,7 @@ class HomeController extends BaseController
     private function _renderPage($page, $data = [])
     {
         try {
-            $data = array_merge($data, ['metadata' => $this->metadata]);
-            $this->app->view->display($page.'.html', $data);
+            $this->app->view->display($page.'.html', $this->getTemplateData($data));
         } catch (\RuntimeException $e) {
             //throw new NotFoundException('Page not found');
         }
