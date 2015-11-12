@@ -7,42 +7,21 @@ use Slim\App;
 
 /**
  * Core Application
+ * @property-read string           base_path
  * @property-read \Slim\Views\Twig view
  */
 class Application extends App {
 
     /**
-     * The basePath to use for the application
-     * @var string
+     * @param ContainerInterface|array $container
      */
-    public $basePath;
-
-    /**
-     * The GuzzleHttp Client used for API requests
-     * @var \GuzzleHttp\Client
-     */
-    public $apiClient;
-
-    /**
-     * The Google Analytics interface
-     * @var \Core\Analytics\Google
-     */
-    public $ga;
-
-    /**
-     * @param ContainerInterface $container
-     */
-    public function __construct(ContainerInterface $container)
+    public function __construct($container = [])
     {
-        $container['app'] = function () {
-            return $this;
-        };
-
         parent::__construct($container);
-
+        $this->getContainer()['app'] = function () { return $this; };
 
         if ($this->getSetting('env') === 'dev') {
-            (new Dotenv($this->basePath))->load();
+            (new Dotenv($this->base_path))->load();
         }
 
         $this->loadRoutes();
@@ -56,15 +35,16 @@ class Application extends App {
      */
     public function getSetting($key, $default = null)
     {
-        $settings = $this->getContainer()->get('settings');
-
-        if (! isset($settings[$key])) {
+        if (! isset($this->settings[$key])) {
             return $default;
         }
 
-        return $settings[$key];
+        return $this->settings[$key];
     }
 
+    /**
+     * Load the routes file
+     */
     private function loadRoutes()
     {
         $routes = $this->loadConfigFile('routes');
@@ -73,6 +53,11 @@ class Application extends App {
         }
     }
 
+    /**
+     * Load a config file.
+     * @param $file
+     * @return bool|mixed
+     */
     private function loadConfigFile($file)
     {
         $file = $this->getSetting('base_path').'/config/'.$file.'.php';
