@@ -1,6 +1,8 @@
 <?php
 namespace Core;
 
+use Slim\Container;
+
 /**
  * Class BaseController
  * @property Application    app
@@ -9,6 +11,11 @@ namespace Core;
  * @package Core
  */
 class BaseController {
+
+    /**
+     * @var Container
+     */
+    protected $container;
 
     /**
      * @var Application
@@ -26,11 +33,12 @@ class BaseController {
     protected $metadata;
 
     /**
-     * @param Application $app
+     * @param Container $container
      */
-    public function __construct(Application $app)
+    public function __construct(Container $container)
     {
-        $this->app = $app;
+        $this->container = $container;
+        $this->app = $container['app'];
 
         $this->metadata = [
             'title' => 'Home',
@@ -39,10 +47,21 @@ class BaseController {
         ];
 
         $this->envData = [
-            'ga_tracking_id' => $this->app->config('ga.tracking_id'),
+            'ga_tracking_id' => $this->app->getSetting('ga.tracking_id'),
             'js_build_path' => rtrim('build/js/', '/'),
             'css_build_path' => rtrim('build/css/', '/'),
         ];
+    }
+
+    /**
+     * Generate a Response object for the given {$template}
+     * @param string $template
+     * @param array $data
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    protected function view($template, $data = [])
+    {
+        return $this->app->view->render($this->app->response, $template, $this->getTemplateData($data));
     }
 
     /**
@@ -51,14 +70,6 @@ class BaseController {
     protected function setMetadata($metadata)
     {
         $this->metadata = array_merge($this->metadata, $metadata);
-    }
-
-    /**
-     * @return null
-     */
-    protected function getCurrentUser()
-    {
-        return $this->app->getCurrentUser();
     }
 
     /**

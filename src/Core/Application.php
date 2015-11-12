@@ -1,21 +1,15 @@
 <?php
 namespace Core;
 
-use Core\Analytics\Google;
 use Dotenv\Dotenv;
-use GuzzleHttp\Client;
-use Slim\Route;
-use Slim\Slim;
+use Interop\Container\ContainerInterface;
+use Slim\App;
 
 /**
  * Core Application
- * @property \GuzzleHttp\Client          apiClient
- * @property \Core\Analytics\Google      ga
- * @property array                       settings
- * @property \Slim\View                  view
- * @package Core
+ * @property-read \Slim\Views\Twig view
  */
-class Application extends Slim {
+class Application extends App {
 
     /**
      * The basePath to use for the application
@@ -36,56 +30,39 @@ class Application extends Slim {
     public $ga;
 
     /**
-     * @param $basePath
+     * @param ContainerInterface $container
      */
-    public function __construct($basePath)
+    public function __construct(ContainerInterface $container)
     {
-        $this->basePath = rtrim($basePath, '/');
+        $container['app'] = function () {
+            return $this;
+        };
 
-        if (! getenv('ENV') || getenv('ENV') === 'dev') {
-            $dotenv = new Dotenv($this->basePath);
-            $dotenv->load();
+        parent::__construct($container);
+
+
+        if ($this->getSetting('env') === 'dev') {
+            (new Dotenv($this->basePath))->load();
         }
 
-        $config = $this->loadConfigFile('config') ?: [];
-        parent::__construct($config);
-
         $this->loadRoutes();
-        $this->setupServices();
-        //$this->setupErrorHandler();
-        //$this->setupNotFound();
-    }
-
-    public function isProd()
-    {
-        return ($this->config('ENV') === 'prod');
-    }
-
-    public function getCurrentUser()
-    {
-        return null;
     }
 
     /**
-     * Override the default behavior to use our own callable parsing.
-     * @author @dhrrgn
-     * @param $args
-     * @return Route
+     * Gets a setting or returns the default.
+     * @param $key
+     * @param null $default
+     * @return null
      */
-    protected function mapRoute($args)
+    public function getSetting($key, $default = null)
     {
-        $pattern  = array_shift($args);
-        $callable = array_pop($args);
-        $callable = $this->getRouteClosure($callable);
-        if (substr($pattern, -1) !== '/') {
-            $pattern .= '/';
+        $settings = $this->getContainer()->get('settings');
+
+        if (! isset($settings[$key])) {
+            return $default;
         }
-        $route = new Route($pattern, $callable, $this->settings['routes.case_sensitive']);
-        $this->router->map($route);
-        if (count($args) > 0) {
-            $route->setMiddleware($args);
-        }
-        return $route;
+
+        return $settings[$key];
     }
 
     private function loadRoutes()
@@ -96,51 +73,9 @@ class Application extends Slim {
         }
     }
 
-    private function setupServices()
-    {
-        $this->apiClient = new Client([
-            'base_uri' => $this->config('api.base'),
-            'http_errors' => false,
-            'headers' => [
-                'Api-Key' => $this->config('api.key'),
-            ],
-        ]);
-
-        $this->ga = new Google($this->config('ga.tracking_id'), http_host());
-    }
-
     private function loadConfigFile($file)
     {
-        $file = $this->basePath.'/config/'.$file.'.php';
+        $file = $this->getSetting('base_path').'/config/'.$file.'.php';
         return is_file($file) ? require($file) : false;
-    }
-
-    /**
-     * Generates a closure for the given definition.
-     * @param $callable
-     * @return callable
-     */
-    private function getRouteClosure($callable)
-    {
-        if (! is_string($callable)) {
-            return $callable;
-        }
-        list($controller, $method) = $this->parseRouteCallable($callable);
-        return function () use ($controller, $method) {
-            $class = $this->settings['routes.controller_namespace'].$controller;
-            $refClass  = new \ReflectionClass($class);
-            $refMethod = $refClass->getMethod($method);
-            return $refMethod->invokeArgs($refClass->newInstance($this), func_get_args());
-        };
-    }
-
-    /**
-     * Parses the route definition string (i.e. 'HomeController:index')
-     * @param $callable
-     * @return array
-     */
-    private function parseRouteCallable($callable)
-    {
-        return explode(':', $callable);
     }
 }

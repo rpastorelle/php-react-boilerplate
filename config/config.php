@@ -13,20 +13,46 @@ switch ($env) {
         break;
 }
 
-return [
+$container = new Slim\Container([
+    'settings' => [
+        'env' => $env,
+        'base_path' => realpath(__DIR__.'/../'),
 
-    'ENV' => $env,
+        'api.version' => $apiVersion,
+        'api.host'    => $apiHost,
+        'api.base'    => $apiHost.'/'.$apiVersion.'/',
+        'api.key'     => '',
 
-    'api.version' => $apiVersion,
-    'api.host'    => $apiHost,
-    'api.base'    => $apiHost.'/'.$apiVersion.'/',
-    'api.key'     => '',
+        'ga.tracking_id' => '',
+    ],
+]);
 
-    'routes.case_sensitive'       => true,
-    'routes.controller_namespace' => '\\App\\Controllers\\',
 
-    'templates.path' => $this->basePath.'/resources/templates',
-    'view'           => new \Slim\Views\Twig(),
+/***** Service Definitions *****/
 
-    'ga.tracking_id' => '',
-];
+$container['view'] = function ($c) {
+    $view = new \Slim\Views\Twig($c['settings']['base_path'].'/resources/templates');
+    $view->addExtension(new \Slim\Views\TwigExtension(
+        $c['router'],
+        $c['request']->getUri()
+    ));
+
+    return $view;
+};
+
+$container['api_client'] = function ($c) {
+    return new GuzzleHttp\Client([
+        'base_uri' => $c['settings']['api.base'],
+        'http_errors' => false,
+        'headers' => [
+            'Api-Key' => $c['settings']['api.key'],
+        ],
+    ]);
+};
+
+$container['ga'] = function ($c) {
+    return new Core\Analytics\Google($c['settings']['ga.tracking_id'], http_host());
+};
+
+
+return $container;

@@ -1,4 +1,3 @@
 <?php
-$app = \Core\Application::getInstance();
 
-$app->get('/', 'HomeController:index');
+$this->get('/', 'App\Controllers\HomeController:index');
