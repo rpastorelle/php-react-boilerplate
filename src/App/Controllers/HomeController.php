@@ -7,11 +7,6 @@ use GuzzleHttp\Psr7\Request;
 
 class HomeController extends BaseController
 {
-    /**
-     * @var array
-     */
-    private $metadata;
-
     function __construct(Application $app)
     {
         parent::__construct($app);
