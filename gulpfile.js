@@ -15,8 +15,8 @@ var production = (process.env.NODE_ENV === 'production');
 
 var JS_BUILD_DIR = './public/build/js/';
 var CSS_BUILD_DIR = './public/build/css/';
-var MAIN_FILE = './resources/assets/js/main.js';
-var appCssFiles = './resources/assets/less/**/*.less';
+var MAIN_FILE = './resources/js/main.js';
+var appCssFiles = './resources/less/**/*.less';
 
 var commonCss = [
   './bower_components/bootstrap/dist/css/bootstrap.css',
