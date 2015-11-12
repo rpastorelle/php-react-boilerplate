@@ -13,8 +13,8 @@ var minifyCss = require('gulp-minify-css');
 
 var production = (process.env.NODE_ENV === 'production');
 
-var JS_BUILD_DIR = './www/build/js/';
-var CSS_BUILD_DIR = './www/build/css/';
+var JS_BUILD_DIR = './public/build/js/';
+var CSS_BUILD_DIR = './public/build/css/';
 var MAIN_FILE = './resources/assets/js/main.js';
 var appCssFiles = './resources/assets/less/**/*.less';
 
