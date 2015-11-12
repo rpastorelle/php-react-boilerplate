@@ -25,7 +25,7 @@ return [
     'routes.case_sensitive'       => true,
     'routes.controller_namespace' => '\\App\\Controllers\\',
 
-    'templates.path' => $this->basePath.'/templates',
+    'templates.path' => $this->basePath.'/resources/templates',
     'view'           => new \Slim\Views\Twig(),
 
     'ga.tracking_id' => '',

@@ -40,7 +40,8 @@ class BaseController {
 
         $this->envData = [
             'ga_tracking_id' => $this->app->config('ga.tracking_id'),
-            'build_path' => rtrim('build/', '/'),
+            'js_build_path' => rtrim('build/js/', '/'),
+            'css_build_path' => rtrim('build/css/', '/'),
         ];
     }
 
