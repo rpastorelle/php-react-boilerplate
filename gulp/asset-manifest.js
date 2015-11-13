@@ -8,9 +8,7 @@ module.exports = {
   update: function (sourceFile, outputFile) {
     if (! utils.isProduction()) return;
 
-    if (assetManifest.hasOwnProperty(sourceFile)) {
-      assetManifest[sourceFile] = outputFile;
-    }
+    assetManifest[sourceFile] = outputFile;
 
     fs.writeFileSync(manifestFile, JSON.stringify(assetManifest, null, 2));
   },
