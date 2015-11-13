@@ -1,8 +1,14 @@
 <?php
+if (! getenv('ENV') || getenv('ENV') === 'dev') {
+    (new Dotenv\Dotenv('../'))->load();
+}
 
 $env = strtolower(getenv('ENV'));
 $apiVersion = 'v1';
 $apiHost = 'https://api.phpreactboilerplate.com';
+// Perhaps S3 or CDN url:
+$assetsUrl = '';
+$assets = json_decode(file_get_contents('../asset-manifest.json'), true);
 switch ($env) {
     case 'stage':
         $apiHost = 'https://stage-api.phpreactboilerplate.com';
@@ -10,6 +16,8 @@ switch ($env) {
 
     case 'dev':
         $apiHost = 'http://dev-api.phpreactboilerplate.com';
+        $assetsUrl = '';
+        $assets = array_combine(array_keys($assets), array_keys($assets));
         break;
 }
 
@@ -22,6 +30,11 @@ $container = new Slim\Container([
         'api.host'    => $apiHost,
         'api.base'    => $apiHost.'/'.$apiVersion.'/',
         'api.key'     => '',
+
+        'app.urls.assets' => $assetsUrl,
+        'app.paths.js'    => $assetsUrl.'/build/js/',
+        'app.paths.css'   => $assetsUrl.'/build/css/',
+        'app.assets'      => $assets,
 
         'ga.tracking_id' => '',
     ],

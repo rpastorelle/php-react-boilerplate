@@ -1,7 +1,6 @@
 <?php
 namespace Core;
 
-use Dotenv\Dotenv;
 use Interop\Container\ContainerInterface;
 use Slim\App;
 
@@ -19,10 +18,6 @@ class Application extends App {
     {
         parent::__construct($container);
         $this->getContainer()['app'] = function () { return $this; };
-
-        if ($this->getSetting('env') === 'dev') {
-            (new Dotenv($this->base_path))->load();
-        }
 
         $this->loadRoutes();
     }
