@@ -27,7 +27,7 @@
     "yargs": "^3.29.0"
   },
   "scripts": {
-    "server": "php -S localhost:8080 -t public/"
+    "start": "php -S localhost:8080 -t public/"
   },
   "repository": {
     "type": "git",
