@@ -8,6 +8,7 @@ $apiVersion = 'v1';
 $apiHost = 'https://api.phpreactboilerplate.com';
 // Perhaps S3 or CDN url:
 $assetsUrl = '';
+$assetsPath = $assetsUrl;
 $assets = json_decode(file_get_contents('../asset-manifest.json'), true);
 switch ($env) {
     case 'stage':
@@ -16,8 +17,9 @@ switch ($env) {
 
     case 'dev':
         $apiHost = 'http://dev-api.phpreactboilerplate.com';
-        $assetsUrl = '';
         $assets = array_combine(array_keys($assets), array_keys($assets));
+        $assetsUrl = '';
+        $assetsPath = '/build';
         break;
 }
 
@@ -32,8 +34,8 @@ $container = new Slim\Container([
         'api.key'     => '',
 
         'app.urls.assets' => $assetsUrl,
-        'app.paths.js'    => $assetsUrl.'/build/js/',
-        'app.paths.css'   => $assetsUrl.'/build/css/',
+        'app.paths.js'    => $assetsPath.'/js/',
+        'app.paths.css'   => $assetsPath.'/css/',
         'app.assets'      => $assets,
 
         'ga.tracking_id' => '',

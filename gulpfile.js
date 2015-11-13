@@ -2,15 +2,21 @@ var source = require('vinyl-source-stream');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var fs = require('fs');
+var glob = require('glob');
+var gulpif = require('gulp-if');
 var browserify = require('browserify');
 var babelify = require('babelify');
 var watchify = require('watchify');
+var streamify = require('gulp-streamify');
 var bowerResolve = require('bower-resolve');
 var nodeResolve = require('resolve');
 var less = require('gulp-less');
 var importify = require('gulp-importify');
 var minifyCss = require('gulp-minify-css');
+var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
+var awspublish = require("gulp-awspublish");
+var runSequence = require('run-sequence');
 
 var config = require('./gulp/config');
 var utils = require('./gulp/utils');
@@ -35,7 +41,7 @@ function bundleCss(src, name) {
   var stream = gulp.src(src)
     .pipe(importify(name+'.less', {cssPreproc: 'less'}))
     .pipe(less())
-    .pipe(minifyCss())
+    .pipe(gulpif(utils.isProduction(), minifyCss()))
     .pipe(rename(outputFile))
     .pipe(gulp.dest(config.cssBuildDirectory));
 
@@ -43,6 +49,30 @@ function bundleCss(src, name) {
 
   return stream;
 }
+
+gulp.task('clean', function(){
+  // Find files
+  glob(config.prodFiles, function(err,files){
+       if (err) throw err;
+       // Delete files
+       files.forEach(function(item,index,array){
+            fs.unlink(item, function(err){
+                 if (err) throw err;
+                 console.log(item + " deleted");
+            });
+       });
+  });
+});
+
+gulp.task('publish', function(){
+  var publisher = awspublish.create(config.aws);
+  var headers = {'Cache-Control': 'max-age=315360000, no-transform, public'};
+
+  return gulp.src(config.prodFiles)
+    .pipe(awspublish.gzip())
+    .pipe(publisher.publish(headers))
+    .pipe(awspublish.reporter());
+});
 
 gulp.task('common-js', function(){
   var sourceFile = outputFile = 'common.js';
@@ -70,7 +100,7 @@ gulp.task('common-js', function(){
       this.emit('end');
     })
     .pipe(source(sourceFile))
-    // Do thingly like uglify here
+    .pipe(gulpif(utils.isProduction(), streamify(uglify())))
     .pipe(rename(outputFile))
     .pipe(gulp.dest(config.jsBuildDirectory));
 
@@ -101,7 +131,7 @@ gulp.task('js', function() {
       this.emit('end');
     })
     .pipe(source(sourceFile))
-    // Do thingly like uglify here
+    .pipe(gulpif(utils.isProduction(), streamify(uglify())))
     .pipe(rename(outputFile))
     .pipe(gulp.dest(config.jsBuildDirectory));
 
@@ -157,7 +187,11 @@ gulp.task('common-css', function() {
   return bundleCss(config.commonCss, 'common');
 });
 
-gulp.task('build', ['common-js' ,'js', 'common-css' ,'css']);
+gulp.task('build', ['common-js' ,'js', 'common-css' ,'css'], function(){
+  if (utils.isProduction()) {
+    runSequence('publish', 'clean');
+  }
+});
 
 // run 'scripts' task first, then watch for future changes
 gulp.task('default', ['build']);

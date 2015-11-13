@@ -3,7 +3,15 @@ module.exports = {
   cssBuildDirectory: './public/build/css/',
   mainJsFile: './resources/js/main.js',
   appCssFiles: './resources/less/**/*.less',
+  prodFiles: './public/build/**/*-*.*',
   commonCss: [
     "./bower_components/bootstrap/dist/css/bootstrap.css",
   ],
+  aws: {
+    "params": {
+      "Bucket": ""
+    },
+    "accessKeyId": "",
+    "secretAccessKey": ""
+  },
 };
