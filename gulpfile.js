@@ -44,7 +44,7 @@ function bundleCss(src, name) {
   return stream;
 }
 
-gulp.task('common', function(){
+gulp.task('common-js', function(){
   var sourceFile = outputFile = 'common.js';
   if (utils.isProduction()) outputFile = 'common-'+VERSION+'.js';
 
@@ -80,7 +80,7 @@ gulp.task('common', function(){
 });
 
 
-gulp.task('build', function() {
+gulp.task('js', function() {
   var sourceFile = outputFile = 'main.js';
   if (utils.isProduction()) outputFile = 'main-'+VERSION+'.js';
 
@@ -157,7 +157,7 @@ gulp.task('common-css', function() {
   return bundleCss(config.commonCss, 'common');
 });
 
-gulp.task('build-all', ['common' ,'build', 'common-css' ,'css']);
+gulp.task('build', ['common-js' ,'js', 'common-css' ,'css']);
 
 // run 'scripts' task first, then watch for future changes
 gulp.task('default', ['build']);

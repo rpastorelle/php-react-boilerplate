@@ -27,11 +27,7 @@
     "yargs": "^3.29.0"
   },
   "scripts": {
-    "watch": "gulp watch",
-    "build-all": "gulp build-all",
-    "build": "gulp build",
-    "common": "gulp common",
-    "up": "php -S localhost:8080 -t public/"
+    "server": "php -S localhost:8080 -t public/"
   },
   "repository": {
     "type": "git",
