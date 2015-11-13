@@ -9,15 +9,14 @@ A boilerplate for PHP/ReactJS projects
 
 ## Run Development Site
 
-1. Start Dev server: `npm run up`
+1. Start Dev server: `npm run start`
 2. Visit [http://localhost:8080](http://localhost:8080), you should see something
 
 
-## JS Build Commands
+## Gulp Tasks
 
 **You must have [Browserify](http://browserify.org/) installed: `npm install -g browserify`**
 
-* Build App: `npm run build`
-* Build App and Watch: `npm run watch`
-* Build Common JS: `npm run common`
-* Build All JS: `npm run build-all`
+* Build App: `gulp build [--production]`
+* Build App and Watch: `gulp watch`
+* More: `gulp --tasks`
