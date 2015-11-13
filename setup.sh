@@ -17,6 +17,6 @@ printf "\n--- Creating .env..."
 cp .env.example .env
 
 printf "\n--- Doing initial build..."
-npm run build
+gulp
 
 printf "\n\nComplete, see README for commands/info!\n"
