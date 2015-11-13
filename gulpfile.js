@@ -1,6 +1,7 @@
 var source = require('vinyl-source-stream');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var gulpif = require('gulp-if');
 var fs = require('fs');
 var browserify = require('browserify');
 var babelify = require('babelify');
@@ -10,6 +11,8 @@ var nodeResolve = require('resolve');
 var less = require('gulp-less');
 var importify = require('gulp-importify');
 var minifyCss = require('gulp-minify-css');
+var rename = require('gulp-rename');
+var argv = require('yargs').argv;
 
 var production = (process.env.NODE_ENV === 'production');
 
@@ -17,10 +20,14 @@ var JS_BUILD_DIR = './public/build/js/';
 var CSS_BUILD_DIR = './public/build/css/';
 var MAIN_FILE = './resources/js/main.js';
 var appCssFiles = './resources/less/**/*.less';
+var assetManifest = require('./asset-manifest.json');
 
 var commonCss = [
   './bower_components/bootstrap/dist/css/bootstrap.css',
 ];
+
+
+var VERSION = Math.floor(Date.now() / 1000);
 
 function getBundler(watch) {
   var props = {
@@ -49,15 +56,38 @@ function getBowerPackages() {
   return Object.keys(pkg.dependencies) || [];
 }
 
+
+function updateManifest(sourceFile, outputFile) {
+  if (! argv.production) return;
+
+  if (assetManifest.hasOwnProperty(sourceFile)) {
+    assetManifest[sourceFile] = outputFile;
+  }
+
+  fs.writeFileSync('./asset-manifest.json', JSON.stringify(assetManifest, null, 4));
+}
+
+
 function bundleCss(src, name) {
-  return gulp.src(src)
+  var sourceFile = outputFile = name+'.css';
+  if (argv.production) outputFile = name+'-'+VERSION+'.css';
+
+  var stream = gulp.src(src)
     .pipe(importify(name+'.less', {cssPreproc: 'less'}))
     .pipe(less())
     .pipe(minifyCss())
+    .pipe(rename(outputFile))
     .pipe(gulp.dest(CSS_BUILD_DIR));
+
+  updateManifest(sourceFile, outputFile);
+
+  return stream;
 }
 
 gulp.task('common', function(){
+  var sourceFile = outputFile = 'common.js';
+  if (argv.production) outputFile = 'common-'+VERSION+'.js';
+
   var bundler = getBundler(false);
 
   getBowerPackages().forEach(function (pkg) {
@@ -79,15 +109,21 @@ gulp.task('common', function(){
       console.log(err.message);
       this.emit('end');
     })
-    .pipe(source('common.js'))
+    .pipe(source(sourceFile))
     // Do thingly like uglify here
+    .pipe(rename(outputFile))
     .pipe(gulp.dest(JS_BUILD_DIR));
+
+  updateManifest(sourceFile, outputFile);
 
   return stream;
 });
 
 
 gulp.task('build', function() {
+  var sourceFile = outputFile = 'main.js';
+  if (argv.production) outputFile = 'main-'+VERSION+'.js';
+
   var bundler = getBundler(false);
   bundler.add(MAIN_FILE);
 
@@ -104,9 +140,12 @@ gulp.task('build', function() {
       console.log(err.message);
       this.emit('end');
     })
-    .pipe(source('main.js'))
+    .pipe(source(sourceFile))
     // Do thingly like uglify here
+    .pipe(rename(outputFile))
     .pipe(gulp.dest(JS_BUILD_DIR));
+
+    updateManifest(sourceFile, outputFile);
 
   return stream;
 });

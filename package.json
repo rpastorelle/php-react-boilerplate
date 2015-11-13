@@ -16,13 +16,16 @@
     "bower-resolve": "^2.2.1",
     "browserify": "^12.0.1",
     "gulp": "^3.9.0",
+    "gulp-if": "^2.0.0",
     "gulp-importify": "0.0.5",
     "gulp-less": "^3.0.3",
     "gulp-minify-css": "^1.2.1",
+    "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.7",
     "resolve": "^1.1.6",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.6.0"
+    "watchify": "^3.6.0",
+    "yargs": "^3.29.0"
   },
   "scripts": {
     "watch": "gulp watch",
