@@ -17,6 +17,6 @@ A boilerplate for PHP/ReactJS projects
 
 **You must have [Browserify](http://browserify.org/) installed: `npm install -g browserify`**
 
-* Build App: `gulp build [--production]`
+* Build App: `gulp [--production]`
 * Build App and Watch: `gulp watch`
 * More: `gulp --tasks`
