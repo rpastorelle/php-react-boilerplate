@@ -1,9 +1,11 @@
 // main.js
 import React from 'react';
 import ReactDOM from 'react-dom';
-import HelloWorld from './Components/HelloWorld';
+import Initialize from './Utils/Initialize';
+import Routes from './Utils/Routes';
 
-ReactDOM.render(
-  <HelloWorld />,
-  document.getElementById('example')
-);
+// Run that init:
+Initialize.onLoad();
+
+// Initialize current route
+Routes.current(window.location.pathname);
