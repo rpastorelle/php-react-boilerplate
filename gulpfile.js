@@ -12,85 +12,46 @@ var less = require('gulp-less');
 var importify = require('gulp-importify');
 var minifyCss = require('gulp-minify-css');
 var rename = require('gulp-rename');
-var argv = require('yargs').argv;
 
-var production = (process.env.NODE_ENV === 'production');
-
-var JS_BUILD_DIR = './public/build/js/';
-var CSS_BUILD_DIR = './public/build/css/';
-var MAIN_FILE = './resources/js/main.js';
-var appCssFiles = './resources/less/**/*.less';
-var assetManifest = require('./asset-manifest.json');
-
-var commonCss = [
-  './bower_components/bootstrap/dist/css/bootstrap.css',
-];
-
+var config = require('./gulp/config');
+var utils = require('./gulp/utils');
+var manifest = require('./gulp/asset-manifest');
 
 var VERSION = Math.floor(Date.now() / 1000);
 
 function getBundler(watch) {
   var props = {
-    debug: !production,
+    debug: !utils.isProduction(),
     transform: [babelify],
   };
 
   return watch ? watchify(browserify(props)) : browserify(props);
 }
 
-function getNPMPackages() {
-  var pkg;
-  try {
-    pkg = require('./package.json');
-  } catch (e) { /* pass */ }
-
-  return Object.keys(pkg.dependencies) || [];
-}
-
-function getBowerPackages() {
-  var pkg;
-  try {
-    pkg = require('./bower.json');
-  } catch (e) { /* pass */ }
-
-  return Object.keys(pkg.dependencies) || [];
-}
-
-
-function updateManifest(sourceFile, outputFile) {
-  if (! argv.production) return;
-
-  if (assetManifest.hasOwnProperty(sourceFile)) {
-    assetManifest[sourceFile] = outputFile;
-  }
-
-  fs.writeFileSync('./asset-manifest.json', JSON.stringify(assetManifest, null, 4));
-}
-
 
 function bundleCss(src, name) {
   var sourceFile = outputFile = name+'.css';
-  if (argv.production) outputFile = name+'-'+VERSION+'.css';
+  if (utils.isProduction()) outputFile = name+'-'+VERSION+'.css';
 
   var stream = gulp.src(src)
     .pipe(importify(name+'.less', {cssPreproc: 'less'}))
     .pipe(less())
     .pipe(minifyCss())
     .pipe(rename(outputFile))
-    .pipe(gulp.dest(CSS_BUILD_DIR));
+    .pipe(gulp.dest(config.cssBuildDirectory));
 
-  updateManifest(sourceFile, outputFile);
+  manifest.update(sourceFile, outputFile);
 
   return stream;
 }
 
 gulp.task('common', function(){
   var sourceFile = outputFile = 'common.js';
-  if (argv.production) outputFile = 'common-'+VERSION+'.js';
+  if (utils.isProduction()) outputFile = 'common-'+VERSION+'.js';
 
   var bundler = getBundler(false);
 
-  getBowerPackages().forEach(function (pkg) {
+  utils.getBowerDependencies().forEach(function (pkg) {
     var resolvedPath = bowerResolve.fastReadSync(pkg);
     try {
       fs.accessSync(resolvedPath, fs.R_OK);
@@ -100,7 +61,7 @@ gulp.task('common', function(){
     }
   });
 
-  getNPMPackages().forEach(function (pkg) {
+  utils.getNpmDependencies().forEach(function (pkg) {
     bundler.require(nodeResolve.sync(pkg), {expose: pkg});
   });
 
@@ -112,9 +73,9 @@ gulp.task('common', function(){
     .pipe(source(sourceFile))
     // Do thingly like uglify here
     .pipe(rename(outputFile))
-    .pipe(gulp.dest(JS_BUILD_DIR));
+    .pipe(gulp.dest(config.jsBuildDirectory));
 
-  updateManifest(sourceFile, outputFile);
+  manifest.update(sourceFile, outputFile);
 
   return stream;
 });
@@ -122,16 +83,16 @@ gulp.task('common', function(){
 
 gulp.task('build', function() {
   var sourceFile = outputFile = 'main.js';
-  if (argv.production) outputFile = 'main-'+VERSION+'.js';
+  if (utils.isProduction()) outputFile = 'main-'+VERSION+'.js';
 
   var bundler = getBundler(false);
-  bundler.add(MAIN_FILE);
+  bundler.add(config.mainJsFile);
 
-  getBowerPackages().forEach(function (pkg) {
+  utils.getBowerDependencies().forEach(function (pkg) {
     bundler.external(pkg);
   });
 
-  getNPMPackages().forEach(function (pkg) {
+  utils.getNpmDependencies().forEach(function (pkg) {
     bundler.external(pkg);
   });
 
@@ -143,9 +104,9 @@ gulp.task('build', function() {
     .pipe(source(sourceFile))
     // Do thingly like uglify here
     .pipe(rename(outputFile))
-    .pipe(gulp.dest(JS_BUILD_DIR));
+    .pipe(gulp.dest(config.jsBuildDirectory));
 
-    updateManifest(sourceFile, outputFile);
+  manifest.update(sourceFile, outputFile);
 
   return stream;
 });
@@ -153,13 +114,13 @@ gulp.task('build', function() {
 
 gulp.task('watch-js', function() {
   var bundler = getBundler(true);
-  bundler.add(MAIN_FILE);
+  bundler.add(config.mainJsFile);
 
-  getBowerPackages().forEach(function (pkg) {
+  utils.getBowerDependencies().forEach(function (pkg) {
     bundler.external(pkg);
   });
 
-  getNPMPackages().forEach(function (pkg) {
+  utils.getNpmDependencies().forEach(function (pkg) {
     bundler.external(pkg);
   });
 
@@ -171,7 +132,7 @@ gulp.task('watch-js', function() {
         this.emit('end');
       })
       .pipe(source('main.js'))
-      .pipe(gulp.dest(JS_BUILD_DIR));
+      .pipe(gulp.dest(config.jsBuildDirectory));
   }
 
   // listen for an update and run rebundle
@@ -184,17 +145,17 @@ gulp.task('watch-js', function() {
 });
 
 gulp.task('watch-css', function () {
-  gulp.watch(appCssFiles, ['css']);
+  gulp.watch(config.appCssFiles, ['css']);
 });
 
 gulp.task('watch', ['watch-js', 'watch-css']);
 
 gulp.task('css', function() {
-  return bundleCss(appCssFiles, 'main');
+  return bundleCss(config.appCssFiles, 'main');
 });
 
 gulp.task('common-css', function() {
-  return bundleCss(commonCss, 'common');
+  return bundleCss(config.commonCss, 'common');
 });
 
 gulp.task('build-all', ['common' ,'build', 'common-css' ,'css']);
