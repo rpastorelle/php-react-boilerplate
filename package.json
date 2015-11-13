@@ -16,7 +16,6 @@
     "bower-resolve": "^2.2.1",
     "browserify": "^12.0.1",
     "gulp": "^3.9.0",
-    "gulp-if": "^2.0.0",
     "gulp-importify": "0.0.5",
     "gulp-less": "^3.0.3",
     "gulp-minify-css": "^1.2.1",
