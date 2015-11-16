@@ -90,7 +90,7 @@ class Application extends App {
         return [
           'env'  => $this->envData,
           'meta' => [
-              'title' => 'Squad App — Snaps for Groups of Friends',
+              'title' => $this->getSetting('app.name'),
           ],
         ];
     }
