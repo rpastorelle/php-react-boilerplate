@@ -17,6 +17,7 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var awspublish = require("gulp-awspublish");
 var runSequence = require('run-sequence');
+var path = require('path');
 
 var config = require('./gulp/config');
 var utils = require('./gulp/utils');
@@ -82,6 +83,11 @@ gulp.task('common-js', function(){
 
   utils.getBowerDependencies().forEach(function (pkg) {
     var resolvedPath = bowerResolve.fastReadSync(pkg);
+    if (path.extname(resolvedPath).indexOf('.js') !== 0) {
+      // Not JavaScript...
+      return;
+    }
+
     try {
       fs.accessSync(resolvedPath, fs.R_OK);
       bundler.require(resolvedPath, {expose: pkg});
@@ -96,7 +102,7 @@ gulp.task('common-js', function(){
 
   var stream = bundler.bundle()
     .on('error', function(err){
-      console.log(err.message);
+      console.log(err);
       this.emit('end');
     })
     .pipe(source(sourceFile))
