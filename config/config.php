@@ -18,7 +18,6 @@ switch ($env) {
     case 'dev':
         $apiHost = 'http://dev-api.phpreactboilerplate.com';
         $assets = array_combine(array_keys($assets), array_keys($assets));
-        $assetsUrl = '';
         $assetsPath = '/build';
         break;
 }
