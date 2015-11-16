@@ -6,7 +6,6 @@ use Slim\Container;
 /**
  * Class BaseController
  * @property Application    app
- * @property array          envData
  * @property array          metadata
  * @package Core
  */
@@ -25,11 +24,6 @@ class BaseController {
     /**
      * @var array
      */
-    protected $envData;
-
-    /**
-     * @var array
-     */
     protected $metadata;
 
     /**
@@ -41,16 +35,9 @@ class BaseController {
         $this->app = $container['app'];
 
         $this->metadata = [
-            'title' => 'Home',
-            'description' => 'Homepage description',
-            'keywords' => '',
-        ];
-
-        $this->envData = [
-            'ga_tracking_id' => $this->app->getSetting('ga.tracking_id'),
-            'assets' => $this->app->getSetting('app.assets'),
-            'js_build_path' => rtrim($this->app->getSetting('app.paths.js'), '/'),
-            'css_build_path' => rtrim($this->app->getSetting('app.paths.css'), '/'),
+            'title' => $this->app->getSetting('app.name'),
+            'description' => $this->app->getSetting('app.description'),
+            'keywords' => $this->app->getSetting('app.keywords'),
         ];
     }
 
@@ -62,7 +49,11 @@ class BaseController {
      */
     protected function view($template, $data = [])
     {
-        return $this->app->view->render($this->app->response, $template, $this->getTemplateData($data));
+        try {
+            return $this->app->view->render($this->app->response, $template, $this->getTemplateData($data));
+        } catch (\Twig_Error $e) {
+            $this->app->notFound();
+        }
     }
 
     /**
@@ -80,7 +71,7 @@ class BaseController {
     protected function getTemplateData($data)
     {
         return [
-            'env'  => $this->envData,
+            'env'  => $this->app->envData,
             'meta' => $this->metadata,
             'data' => $data,
         ];

@@ -28,14 +28,18 @@ $container = new Slim\Container([
         'env' => $env,
         'base_path' => realpath(__DIR__.'/../'),
 
+        'app.name'        => 'PHP React Boilerplate',
+        'app.description' => 'A boilerplate for PHP-React JS web apps.',
+        'app.keywords'    => 'php,reactjs,web apps',
+
         'api.version' => $apiVersion,
         'api.host'    => $apiHost,
         'api.base'    => $apiHost.'/'.$apiVersion.'/',
         'api.key'     => '',
 
         'app.urls.assets' => $assetsUrl,
-        'app.paths.js'    => $assetsPath.'/js/',
-        'app.paths.css'   => $assetsPath.'/css/',
+        'app.paths.js'    => $assetsPath.'/js',
+        'app.paths.css'   => $assetsPath.'/css',
         'app.assets'      => $assets,
 
         'ga.tracking_id' => '',
@@ -68,6 +72,5 @@ $container['api_client'] = function ($c) {
 $container['ga'] = function ($c) {
     return new Core\Analytics\Google($c['settings']['ga.tracking_id'], http_host());
 };
-
 
 return $container;
